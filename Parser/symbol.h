@@ -4,8 +4,6 @@
 // the enumeration class for terminal & non-terminal symbols
 //
 enum class Symbol{
-    // null string
-    nullStr = -1,
     // non-terminal symbols
     program = 0,
     varDecls = 1,
@@ -70,6 +68,8 @@ enum class Symbol{
     // regex symbols
     INTNUM = 58,
     ID = 59,
+    // null string
+    nullStr = 60,
 };
 
 bool isTerminal(Symbol symbol){

@@ -8,9 +8,6 @@ add_executable(Project3
 #        Scanner/DFA.cpp
 #        Scanner/NFA.cpp
 #        Scanner/regex.cpp
-        Parser/util.cpp
-        Parser/util.h
-        Parser/Parse.cpp
         Parser/grammer.cpp
         Parser/grammer.h
-        )
+        Parser/Parse.cpp Parser/Parse.h)

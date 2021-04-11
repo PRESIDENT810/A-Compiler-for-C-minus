@@ -1,14 +1,15 @@
 #include "symbol.h"
 #include <unordered_set>
-#include <deque>
+#include <vector>
+#include <list>
 
 class Rule{
 public:
     Symbol LHS;
-    std::deque<Symbol> RHS;
-    Rule(Symbol symbol){
+    std::vector<Symbol> RHS;
+    explicit Rule(Symbol symbol){
         this->LHS = symbol;
-        this->RHS = std::deque<Symbol>();
+        this->RHS = std::vector<Symbol>();
     }
 };
 
@@ -25,8 +26,10 @@ public:
             this->firstSet.emplace(symbol);
         }
     }
-    void update(std::unordered_set<Symbol> currentGuess){ // union the value of firstSet with the current guess
-        this->firstSet.merge(currentGuess);
+    void takeUnion(const std::unordered_set<Symbol>& newSet){ // union the value of firstSet with the current guess
+        for (auto element : newSet){
+            this->firstSet.emplace(element);
+        }
     }
     bool containNull(){
         for (auto s : this->firstSet){
@@ -44,21 +47,39 @@ public:
         this->symbol = symbol;
         this->followSet = std::unordered_set<Symbol>();
     }
+    void takeUnion(const std::unordered_set<Symbol>& newSet){
+        for (auto element : newSet){
+            this->followSet.emplace(element);
+        }
+    }
 };
-
-std::deque<Rule*> rules;
-std::deque<First*> Firsts;
-std::deque<Follow*> Follows;
 
 class LL1Table{
 public:
-    int** table; // the transition table for LL(1) parser
-    LL1Table();
-    int findProduction(Symbol nonterminal, Symbol lookahead);
+    Rule*** table; // the transition table for LL(1) parser
+    LL1Table(const std::vector<First*>& Firsts, const std::vector<Follow*>& Follows, const std::vector<Rule*>& rules);
+    Rule* findProduction(Symbol nonterminal, Symbol lookahead){
+        return this->table[static_cast<int>(nonterminal)][static_cast<int>(lookahead)-21];
+    }
 };
 
-void makeFirsts();
+void makeFirsts(std::vector<First*>* Firsts, std::vector<Rule*>* rules);
 
-void makeFollows();
+void makeFollows(std::vector<Follow*>* Follows, std::vector<First*>* Firsts, std::vector<Rule*>* rules);
 
-void makeRules();
+void makeRules(std::vector<Rule*>* rules);
+
+std::unordered_set<Symbol> takeUnion(const std::unordered_set<Symbol>& set1, const std::unordered_set<Symbol>& set2){
+    std::unordered_set<Symbol> res = std::unordered_set<Symbol>();
+    for (auto element : set1){
+        res.emplace(element);
+    }
+    for (auto element : set2){
+        res.emplace(element);
+    }
+    return res;
+}
+
+bool containsNull(const std::unordered_set<Symbol>& set);
+
+std::unordered_set<Symbol> findFirst(std::list<Symbol> symbolList, std::vector<First*>* Firsts);
