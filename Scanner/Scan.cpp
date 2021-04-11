@@ -61,7 +61,7 @@ bool findMatch(DFA_Node* dfa_node){
         if (nodes->token != nullptr){
             iB->printBuffer();
             iB->clearBuffer();
-            printf("TOKEN: %s\n", nodes->token);
+            printf("%s\n", nodes->token);
             return true;
         }
     }

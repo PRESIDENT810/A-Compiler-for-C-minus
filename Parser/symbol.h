@@ -1,3 +1,6 @@
+#ifndef PROJECT3_SYMBOL_H_
+#define PROJECT3_SYMBOL_H_
+
 #include <cstring>
 
 //
@@ -72,6 +75,4 @@ enum class Symbol{
     nullStr = 60,
 };
 
-bool isTerminal(Symbol symbol){
-    return static_cast<int>(symbol) > 20;
-}
+#endif //PROJECT3_SYMBOL_H

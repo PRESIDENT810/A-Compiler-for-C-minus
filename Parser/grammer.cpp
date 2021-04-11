@@ -1,5 +1,20 @@
 #include "grammer.h"
 
+bool isTerminal(Symbol symbol){
+    return static_cast<int>(symbol) > 20;
+}
+
+std::unordered_set<Symbol> takeUnion(const std::unordered_set<Symbol>& set1, const std::unordered_set<Symbol>& set2){
+    std::unordered_set<Symbol> res = std::unordered_set<Symbol>();
+    for (auto element : set1){
+        res.emplace(element);
+    }
+    for (auto element : set2){
+        res.emplace(element);
+    }
+    return res;
+}
+
 //
 // this function first construct the FIRST & FOLLOW set for each symbol,
 // and then construct the LL(1) analysis table of all non-terminal symbols
@@ -132,7 +147,7 @@ void makeRules(std::vector<Rule*>* rules) {
     rule->RHS.push_back(Symbol::varDecl);
     rule->RHS.push_back(Symbol::varDecls);
     rules->push_back(rule);
-    // varDeclarations: null
+    // varDeclarations: nullStr
     rule = new Rule(Symbol::varDecls);
     rule->RHS.push_back(Symbol::nullStr);
     rules->push_back(rule);
@@ -169,7 +184,7 @@ void makeRules(std::vector<Rule*>* rules) {
     rule = new Rule(Symbol::decl);
     rule->RHS.push_back(Symbol::ID);
     rules->push_back(rule);
-    // codeBlock: statement
+    // codeBlock: stmt
     rule = new Rule(Symbol::codeBlock);
     rule->RHS.push_back(Symbol::stmt);
     rules->push_back(rule);
@@ -215,11 +230,13 @@ void makeRules(std::vector<Rule*>* rules) {
     rule->RHS.push_back(Symbol::whileStmt);
     rules->push_back(rule);
     // controlStmt: dowhileStmt SEMI
-    rule = new Rule(Symbol::dowhileStmt);
+    rule = new Rule(Symbol::controlStmt);
+    rule->RHS.push_back(Symbol::dowhileStmt);
     rule->RHS.push_back(Symbol::SEMI);
     rules->push_back(rule);
     // controlStmt: returnStmt SEMI
-    rule = new Rule(Symbol::returnStmt);
+    rule = new Rule(Symbol::controlStmt);
+    rule->RHS.push_back(Symbol::returnStmt);
     rule->RHS.push_back(Symbol::SEMI);
     rules->push_back(rule);
     // rwStmt: rStmt
@@ -330,7 +347,7 @@ void makeRules(std::vector<Rule*>* rules) {
     rule->RHS.push_back(Symbol::MINUS);
     rule->RHS.push_back(Symbol::exp);
     rules->push_back(rule);
-    // OpExp: null
+    // OpExp: nullStr
     rule = new Rule(Symbol::OpExp);
     rule->RHS.push_back(Symbol::nullStr);
     rules->push_back(rule);

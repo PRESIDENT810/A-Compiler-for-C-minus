@@ -1,7 +1,12 @@
+#ifndef PROJECT3_GRAMMER_H_
+#define PROJECT3_GRAMMER_H_
+
 #include "symbol.h"
 #include <unordered_set>
 #include <vector>
 #include <list>
+
+bool isTerminal(Symbol symbol);
 
 class Rule{
 public:
@@ -69,17 +74,8 @@ void makeFollows(std::vector<Follow*>* Follows, std::vector<First*>* Firsts, std
 
 void makeRules(std::vector<Rule*>* rules);
 
-std::unordered_set<Symbol> takeUnion(const std::unordered_set<Symbol>& set1, const std::unordered_set<Symbol>& set2){
-    std::unordered_set<Symbol> res = std::unordered_set<Symbol>();
-    for (auto element : set1){
-        res.emplace(element);
-    }
-    for (auto element : set2){
-        res.emplace(element);
-    }
-    return res;
-}
-
 bool containsNull(const std::unordered_set<Symbol>& set);
 
 std::unordered_set<Symbol> findFirst(std::list<Symbol> symbolList, std::vector<First*>* Firsts);
+
+#endif //PROJECT3_GRAMMER_H
