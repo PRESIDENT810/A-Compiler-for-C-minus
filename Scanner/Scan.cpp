@@ -153,7 +153,7 @@ void test(){
 int main(){
 //    test();
     prepareDFA();
-    char filename[15] = "../testFile.c";
+    char filename[15] = "./testFile.c";
     readFile(filename);
     return 0;
 }

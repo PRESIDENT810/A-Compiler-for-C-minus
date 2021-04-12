@@ -14,18 +14,24 @@ public:
         strcpy(this->semanticValue, semanticValue);
         this->type = inferType(tokenValue);
     }
+    Token(){
+        this->semanticValue = new char[0];
+        this->type = Symbol::nullStr;
+    }
 };
 
 class TreeNode;
 
 class TreeNode{
 public:
+    int depth;
     Symbol mySymbol;
     TreeNode* myParent;
     std::list<TreeNode*> myChildren;
-    explicit TreeNode(Symbol mySymbol, TreeNode* myParent){
+    explicit TreeNode(Symbol mySymbol, TreeNode* myParent, int depth){
         this->mySymbol = mySymbol;
         this->myParent = myParent;
+        this->depth = depth;
     }
 };
 

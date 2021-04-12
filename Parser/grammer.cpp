@@ -1,7 +1,7 @@
 #include "grammer.h"
 
 bool isTerminal(Symbol symbol){
-    return static_cast<int>(symbol) > 20;
+    return static_cast<int>(symbol) > nonTerminalCnt-1;
 }
 
 std::unordered_set<Symbol> takeUnion(const std::unordered_set<Symbol>& set1, const std::unordered_set<Symbol>& set2){
@@ -19,30 +19,33 @@ std::unordered_set<Symbol> takeUnion(const std::unordered_set<Symbol>& set1, con
 // this function first construct the FIRST & FOLLOW set for each symbol,
 // and then construct the LL(1) analysis table of all non-terminal symbols
 //
-LL1Table::LL1Table(const std::vector<First*>& Firsts, const std::vector<Follow*>& Follows, const std::vector<Rule*>& rules){
+LL1Table::LL1Table(std::vector<First*>* Firsts, std::vector<Follow*>* Follows, std::vector<Rule*>* rules){
     // initialize the table
-    this->table = new Rule**[28];
-    for (int i=0; i<20; i++) this->table[i] = new Rule*[40];
+    this->table = new Rule**[nonTerminalCnt];
+    for (int i=0; i<nonTerminalCnt; i++) this->table[i] = new Rule*[terminalCnt];
     // construct FIRST & FOLLOW set
-    for (auto rule : rules){
+    for (auto rule : *rules){
         Symbol nonterminal = rule->LHS;
-        First* first = Firsts[static_cast<int>(nonterminal)];
-        Follow* follow = Follows[static_cast<int>(nonterminal)];
+        auto alpha = std::list<Symbol>();
+        for (auto s : rule->RHS) alpha.emplace_back(s);
+        auto firstSet = findFirst(alpha, Firsts);
+        auto follow = (*Follows)[static_cast<int>(nonterminal)];
+        auto followSet = follow->followSet;
         std::unordered_set<Symbol> lookaheads;
 
-        if (!containsNull(first->firstSet)){
-            lookaheads = first->firstSet;
+        if (!containsNull(firstSet)){
+            lookaheads = firstSet;
         } else{
-            lookaheads = takeUnion(first->firstSet, follow->followSet);
+            lookaheads = takeUnion(firstSet, followSet);
         }
         for (auto s : lookaheads){
-            this->table[static_cast<int>(nonterminal)][static_cast<int>(s)-21] = rule;
+            this->table[static_cast<int>(nonterminal)][static_cast<int>(s)-nonTerminalCnt] = rule;
         }
     }
 }
 
 bool containsNull(const std::unordered_set<Symbol>& set){
-    for (auto s : set) if (s == Symbol::nullStr) return true;
+    for (auto s : set) if (static_cast<int>(s) == static_cast<int>(Symbol::nullStr)) return true;
     return false;
 }
 
@@ -57,9 +60,7 @@ std::unordered_set<Symbol> findFirst(std::list<Symbol> symbolList, std::vector<F
     Symbol a1 = *symbolList.begin();
     First* Firsta1 = (*Firsts)[static_cast<int>(a1)];
 
-    if (symbolList.empty()){
-        res.emplace(Symbol::nullStr);
-    } else if (!Firsta1->containNull()){
+    if (!Firsta1->containNull()){
         res = takeUnion(res, Firsta1->firstSet);
     } else{
         res = takeUnion(res, Firsta1->firstSet);
@@ -72,7 +73,7 @@ std::unordered_set<Symbol> findFirst(std::list<Symbol> symbolList, std::vector<F
 
 void makeFirsts(std::vector<First*>* Firsts, std::vector<Rule*>* rules){
     // compute initial guess
-    for (int i=0; i<61; i++){
+    for (int i=0; i<(nonTerminalCnt+terminalCnt); i++){
         auto symbol = static_cast<Symbol>(i);
         Firsts->push_back(new First(symbol));
     }
@@ -100,7 +101,7 @@ void makeFirsts(std::vector<First*>* Firsts, std::vector<Rule*>* rules){
 
 void makeFollows(std::vector<Follow*>* Follows, std::vector<First*>* Firsts, std::vector<Rule*>* rules){
     // compute initial guess
-    for (int i=0; i<21; i++){
+    for (int i=0; i<nonTerminalCnt; i++){
         auto symbol = static_cast<Symbol>(i);
         Follows->push_back(new Follow(symbol));
     }
@@ -138,22 +139,18 @@ void makeFollows(std::vector<Follow*>* Follows, std::vector<First*>* Firsts, std
 
 void makeRules(std::vector<Rule*>* rules) {
     Rule* rule;
-    // program: varDecl stmts
+    // program: varDecls stmts
     rule = new Rule(Symbol::program);
-    rule->RHS.push_back(Symbol::varDecl);
+    rule->RHS.push_back(Symbol::varDecls);
     rule->RHS.push_back(Symbol::stmts);
     rules->push_back(rule);
-    // valDecls: varDecl valDeclsPostfix
+    // varDecls: varDecl varDecls
     rule = new Rule(Symbol::varDecls);
     rule->RHS.push_back(Symbol::varDecl);
-    rule->RHS.push_back(Symbol::varDeclsPostfix);
-    rules->push_back(rule);
-    // valDeclsPostfix: varDecls
-    rule = new Rule(Symbol::varDeclsPostfix);
     rule->RHS.push_back(Symbol::varDecls);
     rules->push_back(rule);
-    // valDeclsPostfix: nullStr
-    rule = new Rule(Symbol::varDeclsPostfix);
+    // varDecls: nullStr
+    rule = new Rule(Symbol::varDecls);
     rule->RHS.push_back(Symbol::nullStr);
     rules->push_back(rule);
     // varDecl: INT declList SEMI
@@ -286,6 +283,7 @@ void makeRules(std::vector<Rule*>* rules) {
     rules->push_back(rule);
     // ifStmts: ifStmt ifStmtsPostfix
     rule = new Rule(Symbol::ifStmts);
+    rule->RHS.push_back(Symbol::ifStmt);
     rule->RHS.push_back(Symbol::ifStmtsPostfix);
     rules->push_back(rule);
     // ifStmtsPostfix: nullStr
@@ -359,6 +357,10 @@ void makeRules(std::vector<Rule*>* rules) {
     rule->RHS.push_back(Symbol::LSQUARE);
     rule->RHS.push_back(Symbol::exp);
     rule->RHS.push_back(Symbol::RSQUARE);
+    rules->push_back(rule);
+    // realExp: INTNUM
+    rule = new Rule(Symbol::realExp);
+    rule->RHS.push_back(Symbol::INTNUM);
     rules->push_back(rule);
     // realExp: NOT_OP exp
     rule = new Rule(Symbol::realExp);

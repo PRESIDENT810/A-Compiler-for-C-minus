@@ -62,9 +62,9 @@ public:
 class LL1Table{
 public:
     Rule*** table; // the transition table for LL(1) parser
-    LL1Table(const std::vector<First*>& Firsts, const std::vector<Follow*>& Follows, const std::vector<Rule*>& rules);
+    LL1Table(std::vector<First*>* Firsts, std::vector<Follow*>* Follows, std::vector<Rule*>* rules);
     Rule* findProduction(Symbol nonterminal, Symbol lookahead){
-        return this->table[static_cast<int>(nonterminal)][static_cast<int>(lookahead)-21];
+        return this->table[static_cast<int>(nonterminal)][static_cast<int>(lookahead)-nonTerminalCnt];
     }
 };
 
@@ -83,15 +83,8 @@ std::unordered_set<Symbol> findFirst(std::list<Symbol> symbolList, std::vector<F
 // The grammar we use:
 //
 // program: varDecl stmts
-
-// TODO: common left prefix!
 // varDecls: varDecl varDecls
-// varDecls: valDecl
-// change to:
-// valDecls: varDecl valDeclsPostfix
-// valDeclsPostfix: varDecls
-// valDeclsPostfix: nullStr
-
+// varDecls: nullStr
 // varDecl: INT declList SEMI
 
 // TODO: common left prefix!
