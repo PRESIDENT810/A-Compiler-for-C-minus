@@ -21,7 +21,7 @@ std::unordered_set<Symbol> takeUnion(const std::unordered_set<Symbol>& set1, con
 //
 LL1Table::LL1Table(const std::vector<First*>& Firsts, const std::vector<Follow*>& Follows, const std::vector<Rule*>& rules){
     // initialize the table
-    this->table = new Rule**[20];
+    this->table = new Rule**[28];
     for (int i=0; i<20; i++) this->table[i] = new Rule*[40];
     // construct FIRST & FOLLOW set
     for (auto rule : rules){
@@ -29,6 +29,7 @@ LL1Table::LL1Table(const std::vector<First*>& Firsts, const std::vector<Follow*>
         First* first = Firsts[static_cast<int>(nonterminal)];
         Follow* follow = Follows[static_cast<int>(nonterminal)];
         std::unordered_set<Symbol> lookaheads;
+
         if (!containsNull(first->firstSet)){
             lookaheads = first->firstSet;
         } else{
@@ -137,52 +138,66 @@ void makeFollows(std::vector<Follow*>* Follows, std::vector<First*>* Firsts, std
 
 void makeRules(std::vector<Rule*>* rules) {
     Rule* rule;
-    // program: varDeclarations stmts
+    // program: varDecl stmts
     rule = new Rule(Symbol::program);
     rule->RHS.push_back(Symbol::varDecl);
     rule->RHS.push_back(Symbol::stmts);
     rules->push_back(rule);
-    // varDeclarations: varDeclaration varDeclarations
+    // valDecls: varDecl valDeclsPostfix
     rule = new Rule(Symbol::varDecls);
     rule->RHS.push_back(Symbol::varDecl);
+    rule->RHS.push_back(Symbol::varDeclsPostfix);
+    rules->push_back(rule);
+    // valDeclsPostfix: varDecls
+    rule = new Rule(Symbol::varDeclsPostfix);
     rule->RHS.push_back(Symbol::varDecls);
     rules->push_back(rule);
-    // varDeclarations: nullStr
-    rule = new Rule(Symbol::varDecls);
+    // valDeclsPostfix: nullStr
+    rule = new Rule(Symbol::varDeclsPostfix);
     rule->RHS.push_back(Symbol::nullStr);
     rules->push_back(rule);
-    // varDeclaration: INT declarationList SEMI
+    // varDecl: INT declList SEMI
     rule = new Rule(Symbol::varDecl);
     rule->RHS.push_back(Symbol::INT);
     rule->RHS.push_back(Symbol::declList);
     rule->RHS.push_back(Symbol::SEMI);
     rules->push_back(rule);
-    // declarationList: declaration COMMA declarationList
+    // declList: decl declListPostfix
     rule = new Rule(Symbol::declList);
-    rule->RHS.push_back(Symbol::decl);
+    rule->RHS.push_back(Symbol::declListPostfix);
+    rules->push_back(rule);
+    // declListPostfix: COMMA declList
+    rule = new Rule(Symbol::declListPostfix);
     rule->RHS.push_back(Symbol::COMMA);
     rule->RHS.push_back(Symbol::declList);
     rules->push_back(rule);
-    // declarationList: declaration
+    // declListPostfix: nullStr
+    rule = new Rule(Symbol::declListPostfix);
+    rule->RHS.push_back(Symbol::nullStr);
+    rules->push_back(rule);
+    // declList: decl
     rule = new Rule(Symbol::declList);
     rule->RHS.push_back(Symbol::decl);
     rules->push_back(rule);
-    // declaration: ID ASSIGN INTNUM
+    // decl: ID declPostfix
     rule = new Rule(Symbol::decl);
     rule->RHS.push_back(Symbol::ID);
+    rule->RHS.push_back(Symbol::declPostfix);
+    rules->push_back(rule);
+    // declPostfix: ASSIGN INTNUM
+    rule = new Rule(Symbol::declPostfix);
     rule->RHS.push_back(Symbol::ASSIGN);
     rule->RHS.push_back(Symbol::INTNUM);
     rules->push_back(rule);
-    // declaration: ID LSQUARE INTNUM RSQUARE
-    rule = new Rule(Symbol::decl);
-    rule->RHS.push_back(Symbol::ID);
+    // declPostfix: LSQUARE INTNUM RSQUARE
+    rule = new Rule(Symbol::declPostfix);
     rule->RHS.push_back(Symbol::LSQUARE);
     rule->RHS.push_back(Symbol::INTNUM);
     rule->RHS.push_back(Symbol::RSQUARE);
     rules->push_back(rule);
-    // declaration: ID
-    rule = new Rule(Symbol::decl);
-    rule->RHS.push_back(Symbol::ID);
+    // declPostfix: nullStr
+    rule = new Rule(Symbol::declPostfix);
+    rule->RHS.push_back(Symbol::nullStr);
     rules->push_back(rule);
     // codeBlock: stmt
     rule = new Rule(Symbol::codeBlock);
@@ -194,14 +209,18 @@ void makeRules(std::vector<Rule*>* rules) {
     rule->RHS.push_back(Symbol::stmts);
     rule->RHS.push_back(Symbol::RBRACE);
     rules->push_back(rule);
-    // stmts: stmt stmts
+    // stmts: stmt stmtsPostfix
     rule = new Rule(Symbol::stmts);
     rule->RHS.push_back(Symbol::stmt);
+    rule->RHS.push_back(Symbol::stmtsPostfix);
+    rules->push_back(rule);
+    // stmtsPostfix: stmts
+    rule = new Rule(Symbol::stmtsPostfix);
     rule->RHS.push_back(Symbol::stmts);
     rules->push_back(rule);
-    // stmts: stmt
-    rule = new Rule(Symbol::stmts);
-    rule->RHS.push_back(Symbol::stmt);
+    // stmtsPostfix: nullStr
+    rule = new Rule(Symbol::stmtsPostfix);
+    rule->RHS.push_back(Symbol::nullStr);
     rules->push_back(rule);
     // stmt: assignStmt SEMI
     rule = new Rule(Symbol::stmt);
@@ -247,28 +266,34 @@ void makeRules(std::vector<Rule*>* rules) {
     rule = new Rule(Symbol::rwStmt);
     rule->RHS.push_back(Symbol::wStmt);
     rules->push_back(rule);
-    // assignStmt: ID LSQUARE exp RSQUARE ASSIGN exp
+    // assignStmt: ID assignStmtPostfix
     rule = new Rule(Symbol::assignStmt);
     rule->RHS.push_back(Symbol::ID);
+    rule->RHS.push_back(Symbol::assignStmtPostfix);
+    rules->push_back(rule);
+    // assignStmtPostfix: LSQUARE exp RSQUARE ASSIGN exp
+    rule = new Rule(Symbol::assignStmtPostfix);
     rule->RHS.push_back(Symbol::LSQUARE);
     rule->RHS.push_back(Symbol::exp);
     rule->RHS.push_back(Symbol::RSQUARE);
     rule->RHS.push_back(Symbol::ASSIGN);
     rule->RHS.push_back(Symbol::exp);
     rules->push_back(rule);
-    // assignStmt: ID ASSIGN exp
-    rule = new Rule(Symbol::assignStmt);
-    rule->RHS.push_back(Symbol::ID);
+    // assignStmtPostfix: ASSIGN exp
+    rule = new Rule(Symbol::assignStmtPostfix);
     rule->RHS.push_back(Symbol::ASSIGN);
     rule->RHS.push_back(Symbol::exp);
     rules->push_back(rule);
-    // ifStmts: ifStmt
+    // ifStmts: ifStmt ifStmtsPostfix
     rule = new Rule(Symbol::ifStmts);
-    rule->RHS.push_back(Symbol::ifStmt);
+    rule->RHS.push_back(Symbol::ifStmtsPostfix);
     rules->push_back(rule);
-    // ifStmts: ifStmt ELSE codeBlock
-    rule = new Rule(Symbol::ifStmts);
-    rule->RHS.push_back(Symbol::ifStmt);
+    // ifStmtsPostfix: nullStr
+    rule = new Rule(Symbol::ifStmtsPostfix);
+    rule->RHS.push_back(Symbol::nullStr);
+    rules->push_back(rule);
+    // ifStmtsPostfix: ELSE codeBlock
+    rule = new Rule(Symbol::ifStmtsPostfix);
     rule->RHS.push_back(Symbol::ELSE);
     rule->RHS.push_back(Symbol::codeBlock);
     rules->push_back(rule);
@@ -320,13 +345,17 @@ void makeRules(std::vector<Rule*>* rules) {
     rule->RHS.push_back(Symbol::realExp);
     rule->RHS.push_back(Symbol::OpExp);
     rules->push_back(rule);
-    // realExp: ID
+    // realExp: ID realExpPostfix
     rule = new Rule(Symbol::realExp);
     rule->RHS.push_back(Symbol::ID);
+    rule->RHS.push_back(Symbol::realExpPostfix);
     rules->push_back(rule);
-    // realExp: ID LSQUARE exp RSQUARE
-    rule = new Rule(Symbol::realExp);
-    rule->RHS.push_back(Symbol::ID);
+    // realExpPostfix: nullStr
+    rule = new Rule(Symbol::realExpPostfix);
+    rule->RHS.push_back(Symbol::nullStr);
+    rules->push_back(rule);
+    // realExpPostfix: LSQUARE exp RSQUARE
+    rule = new Rule(Symbol::realExpPostfix);
     rule->RHS.push_back(Symbol::LSQUARE);
     rule->RHS.push_back(Symbol::exp);
     rule->RHS.push_back(Symbol::RSQUARE);
