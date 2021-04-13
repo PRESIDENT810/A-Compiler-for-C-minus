@@ -1,4 +1,5 @@
 #include "Parse.h"
+#include <exception>
 
 std::vector<Rule*> rules;
 std::vector<First*> Firsts;
@@ -96,6 +97,8 @@ std::vector<Token*> tokenScanner(char* filename){
 
     FILE* fp = nullptr;
     fp = fopen(filename, "r");
+    if (fp == nullptr) throw std::runtime_error("No valid file!");
+        
     char* semanticBuffer = new char[20];
     char* tokenBuffer = new char[20];
     int N = 99;
@@ -110,7 +113,8 @@ std::vector<Token*> tokenScanner(char* filename){
 }
 
 inline Rule* matchRule(Symbol crtSymbol, Token* lookahead){
-    return table->findProduction(crtSymbol, lookahead->type);
+    auto res = table->findProduction(crtSymbol, lookahead->type);
+    return res == nullptr ? table->findProduction(crtSymbol, Symbol::nullStr) : res;
 }
 
 void printNode(TreeNode* crtNode){
@@ -120,6 +124,34 @@ void printNode(TreeNode* crtNode){
     }
     // print symbol type
     printf("--[%s]\n", symbolToStr[static_cast<int>(crtNode->mySymbol)]);
+}
+
+Rule* chooseIfRule(std::vector<Token*> tokenVec){
+    int tempIter = iter;
+    for (int i=tempIter; i<tokenVec.size(); i++){
+        if (tokenVec[i]->type == Symbol::IF){
+            // if find IF first, then use rule: ifStmtsPostfix->nullStr
+            return rules[31];
+        } else if (tokenVec[i]->type == Symbol::ELSE){
+            // if find ELSE first, then use rule: ifStmtsPostfix->ELSE codeBlock
+            return rules[32];
+        }
+    }
+    return rules[31];
+}
+
+Rule* chooseOpExpRule(std::vector<Token*> tokenVec){
+    int tempIter = iter;
+    for (int i=tempIter; i<tokenVec.size(); i++){
+        if (tokenVec[i]->type == Symbol::IF){
+            // if find IF first, then use rule: ifStmtsPostfix->nullStr
+            return rules[31];
+        } else if (tokenVec[i]->type == Symbol::ELSE){
+            // if find ELSE first, then use rule: ifStmtsPostfix->ELSE codeBlock
+            return rules[32];
+        }
+    }
+    return rules[31];
 }
 
 TreeNode* recursiveParse(Symbol crtSymbol, std::vector<Token*> tokenVec, TreeNode* parentNode, int depth){
@@ -135,6 +167,13 @@ TreeNode* recursiveParse(Symbol crtSymbol, std::vector<Token*> tokenVec, TreeNod
     Rule* appliedRule;
     Token* lookahead;
 
+    if (crtSymbol == Symbol::ifStmtsPostfix){
+        appliedRule = chooseIfRule(tokenVec);
+    }
+//    else if (crtSymbol == Symbol::realExp){
+//
+//    }
+
     // find the correct rule to apply
     for (auto rule : rules){
         if (rule->LHS == crtSymbol) potentialRules.emplace_back(rule);
@@ -144,6 +183,10 @@ TreeNode* recursiveParse(Symbol crtSymbol, std::vector<Token*> tokenVec, TreeNod
         appliedRule = matchRule(crtSymbol, lookahead);
     } else{
         appliedRule = *potentialRules.begin();
+    }
+    // check whether we have an applied rule
+    if (appliedRule == nullptr){
+        throw std::runtime_error("No rule matched!\n");
     }
 
     // iterate the RHS of the rule and build TreeNode recursively
@@ -166,7 +209,15 @@ int main(){
     table = new LL1Table(&Firsts, &Follows, &rules);
     char filename[30] = "./ScannerOutput.txt";
     std::vector<Token*> tokenVec = tokenScanner(filename);
-    TreeNode* root = recursiveParse(Symbol::program, tokenVec, nullptr, 0);
-    showTree(root);
+    // TODO: special handler for if
+    // TODO: special handler for OpExp
+    // TODO: special handler for precedence
+    try {
+        TreeNode* root = recursiveParse(Symbol::program, tokenVec, nullptr, 0);
+        showTree(root);
+    } catch (std::exception &e){
+        printf("%s", e.what());
+        printf("Wrong grammar, cannot parse!\n");
+    }
     return 0;
 }

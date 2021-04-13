@@ -6,6 +6,7 @@
 // varDecl: INT declList SEMI
 // declList: decl declListPostfix
 // declListPostfix: COMMA declList
+// declListPostfix: nullStr
 // decl: ID declPostfix
 // declPostfix: ASSIGN INTNUM
 // declPostfix: LSQUARE INTNUM RSQUARE

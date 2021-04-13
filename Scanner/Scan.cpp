@@ -91,8 +91,12 @@ void readFile(const char* filename){
     fp = fopen(filename, "r");
 
     char c = readNext(fp);
-    bool matched[headNodes.size()];
-    memset(matched, true, headNodes.size());
+    bool* matched = new bool[headNodes.size()];
+    int* matchLen = new int[headNodes.size()];
+    for (int i=0; i<headNodes.size(); i++){
+        matched[i] = true;
+        matchLen[i] = 0;
+    }
     // read the file by characters
     while (c != EOF){
         // if all regex doesn't match, output the current token and reset everything
@@ -107,17 +111,31 @@ void readFile(const char* filename){
                     crtNodes[i] = edge->to;
                     crtRegMatch = true;
                     nonMatched = false;
+                    matchLen[i]++;
+                    break;
                 }
             }
             matched[i] = crtRegMatch;
         }
         // if no regex matches
         if (nonMatched){
-            // reset teh matching status to false
-            memset(matched, true, headNodes.size());
+            int max = 0;
+            for (int i=0; i<headNodes.size(); i++){
+//                if (!matched[i]) continue;
+                max = matchLen[i] > max ? matchLen[i] : max;
+            }
             // output the current token
             for (int i=0; i!=crtNodes.size(); i++){
-                if (findMatch(crtNodes[i])) break;
+                if (matchLen[i] != max) continue;
+                if (findMatch(crtNodes[i])) {
+//                    printf("\nMy matchLen is %d\n", matchLen[i]);
+                    break;
+                }
+            }
+            // reset the matching status to false
+            for (int i=0; i<headNodes.size(); i++){
+                matched[i] = true;
+                matchLen[i] = 0;
             }
             // reset the tracking node to initial states
             for (int i=0; i!=crtNodes.size(); i++){
@@ -127,7 +145,6 @@ void readFile(const char* filename){
             if (isBlank(c)){
                 c = readNext(fp);
             } else{
-//                iB->fillBuffer(c);
                 continue;
             }
         } else{
@@ -137,6 +154,7 @@ void readFile(const char* filename){
     }
     // when EOF, output the last token
     for (int i=0; i!=crtNodes.size(); i++){
+        if (!matched[i]) continue;
         if (findMatch(crtNodes[i])) break;
     }
 }

@@ -15,6 +15,11 @@ std::unordered_set<Symbol> takeUnion(const std::unordered_set<Symbol>& set1, con
     return res;
 }
 
+bool sameSymbol(Symbol symbol1, int n2){
+    int n1 = static_cast<int>(symbol1);
+    return n1 == n2;
+}
+
 //
 // this function first construct the FIRST & FOLLOW set for each symbol,
 // and then construct the LL(1) analysis table of all non-terminal symbols
@@ -23,6 +28,11 @@ LL1Table::LL1Table(std::vector<First*>* Firsts, std::vector<Follow*>* Follows, s
     // initialize the table
     this->table = new Rule**[nonTerminalCnt];
     for (int i=0; i<nonTerminalCnt; i++) this->table[i] = new Rule*[terminalCnt];
+    for (int i=0; i<nonTerminalCnt; i++){
+        for (int j=0; j<terminalCnt; j++){
+            this->table[i][j] = nullptr;
+        }
+    }
     // construct FIRST & FOLLOW set
     for (auto rule : *rules){
         Symbol nonterminal = rule->LHS;
@@ -39,6 +49,9 @@ LL1Table::LL1Table(std::vector<First*>* Firsts, std::vector<Follow*>* Follows, s
             lookaheads = takeUnion(firstSet, followSet);
         }
         for (auto s : lookaheads){
+//            if (this->table[static_cast<int>(nonterminal)][static_cast<int>(s)-nonTerminalCnt] != nullptr && this->table[static_cast<int>(nonterminal)][static_cast<int>(s)-nonTerminalCnt] != rule){
+//                printf("Fuck!\n");
+//            }
             this->table[static_cast<int>(nonterminal)][static_cast<int>(s)-nonTerminalCnt] = rule;
         }
     }
@@ -161,6 +174,7 @@ void makeRules(std::vector<Rule*>* rules) {
     rules->push_back(rule);
     // declList: decl declListPostfix
     rule = new Rule(Symbol::declList);
+    rule->RHS.push_back(Symbol::decl);
     rule->RHS.push_back(Symbol::declListPostfix);
     rules->push_back(rule);
     // declListPostfix: COMMA declList
@@ -171,10 +185,6 @@ void makeRules(std::vector<Rule*>* rules) {
     // declListPostfix: nullStr
     rule = new Rule(Symbol::declListPostfix);
     rule->RHS.push_back(Symbol::nullStr);
-    rules->push_back(rule);
-    // declList: decl
-    rule = new Rule(Symbol::declList);
-    rule->RHS.push_back(Symbol::decl);
     rules->push_back(rule);
     // decl: ID declPostfix
     rule = new Rule(Symbol::decl);
