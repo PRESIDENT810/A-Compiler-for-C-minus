@@ -126,21 +126,7 @@ void printNode(TreeNode* crtNode){
     printf("--[%s]\n", symbolToStr[static_cast<int>(crtNode->mySymbol)]);
 }
 
-Rule* chooseIfRule(std::vector<Token*> tokenVec){
-    int tempIter = iter;
-    for (int i=tempIter; i<tokenVec.size(); i++){
-        if (tokenVec[i]->type == Symbol::IF){
-            // if find IF first, then use rule: ifStmtsPostfix->nullStr
-            return rules[31];
-        } else if (tokenVec[i]->type == Symbol::ELSE){
-            // if find ELSE first, then use rule: ifStmtsPostfix->ELSE codeBlock
-            return rules[32];
-        }
-    }
-    return rules[31];
-}
-
-Rule* chooseOpExpRule(std::vector<Token*> tokenVec){
+Rule* chooseIfRule(std::vector<Token*> tokenVec, TreeNode* crtNode){
     int tempIter = iter;
     for (int i=tempIter; i<tokenVec.size(); i++){
         if (tokenVec[i]->type == Symbol::IF){
@@ -167,23 +153,26 @@ TreeNode* recursiveParse(Symbol crtSymbol, std::vector<Token*> tokenVec, TreeNod
     Rule* appliedRule;
     Token* lookahead;
 
-    if (crtSymbol == Symbol::ifStmtsPostfix){
-        appliedRule = chooseIfRule(tokenVec);
-    }
-//    else if (crtSymbol == Symbol::realExp){
-//
-//    }
-
     // find the correct rule to apply
-    for (auto rule : rules){
-        if (rule->LHS == crtSymbol) potentialRules.emplace_back(rule);
+    if (crtSymbol == Symbol::ifStmtsPostfix){
+        appliedRule = chooseIfRule(tokenVec, crtNode);
     }
-    if (potentialRules.size() > 1){ // we need to find the correct rule using the table
-        lookahead = tokenVec[iter]; // get the token
-        appliedRule = matchRule(crtSymbol, lookahead);
-    } else{
-        appliedRule = *potentialRules.begin();
+    // TODO: solve precedence and associativity here
+    else if (crtSymbol == Symbol::OpExp && false){
+//        appliedRule = chooseOpExpRule(tokenVec, crtNode);
     }
+    else{
+        for (auto rule : rules){
+            if (rule->LHS == crtSymbol) potentialRules.emplace_back(rule);
+        }
+        if (potentialRules.size() > 1){ // we need to find the correct rule using the table
+            lookahead = tokenVec[iter]; // get the token
+            appliedRule = matchRule(crtSymbol, lookahead);
+        } else{
+            appliedRule = *potentialRules.begin();
+        }
+    }
+
     // check whether we have an applied rule
     if (appliedRule == nullptr){
         throw std::runtime_error("No rule matched!\n");
