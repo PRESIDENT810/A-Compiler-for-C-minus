@@ -5,6 +5,9 @@
 
 Symbol inferType(char* tokenValue);
 
+//
+// Token class stores the information of a token
+//
 class Token{
 public:
     Symbol type;
@@ -22,6 +25,9 @@ public:
 
 class TreeNode;
 
+//
+// a node in the parse tree
+//
 class TreeNode{
 public:
     int depth;
