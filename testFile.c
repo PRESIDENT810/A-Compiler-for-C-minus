@@ -1,7 +1,6 @@
-int  inta;
-int input;
-inta = (a+b)/c*d;
-scanf(input);
-if(inta == 233 || inta >= 233){ printf(inta);}
-else{do{input = input + 1;}while(inta != 233);}
-return;
+int a, b, c;
+int d = 4;
+a = 1;
+b = 2;
+c = 3;
+a = -b+c*d-d/arr[4]

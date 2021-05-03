@@ -106,3 +106,4 @@ bool containsNull(const std::unordered_set<Symbol>& set);
 std::unordered_set<Symbol> findFirst(std::list<Symbol> symbolList, std::vector<First*>* Firsts);
 
 #endif //PROJECT3_GRAMMER_H
+

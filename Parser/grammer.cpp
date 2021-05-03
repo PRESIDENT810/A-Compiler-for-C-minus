@@ -20,10 +20,6 @@ bool sameSymbol(Symbol symbol1, int n2){
     return n1 == n2;
 }
 
-//
-// this function first construct the FIRST & FOLLOW set for each symbol,
-// and then construct the LL(1) analysis table of all non-terminal symbols
-//
 LL1Table::LL1Table(std::vector<First*>* Firsts, std::vector<Follow*>* Follows, std::vector<Rule*>* rules){
     // initialize the table
     this->table = new Rule**[nonTerminalCnt];

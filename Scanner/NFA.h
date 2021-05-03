@@ -40,7 +40,6 @@ public:
     std::list<NFA_Edge*> edges;
     int stateID;
     bool visited;
-    // TODO: add a pointer to the DFA_Node (node set) it belongs to
     DFA_Node* mySet;
 };
 

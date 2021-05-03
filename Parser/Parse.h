@@ -30,15 +30,22 @@ class TreeNode;
 //
 class TreeNode{
 public:
-    int depth;
     Symbol mySymbol;
     TreeNode* myParent;
-    std::list<TreeNode*> myChildren;
-    explicit TreeNode(Symbol mySymbol, TreeNode* myParent, int depth){
+    char* semanticValue;
+    std::vector<TreeNode*> myChildren;
+    explicit TreeNode(Symbol mySymbol, TreeNode* myParent){
         this->mySymbol = mySymbol;
         this->myParent = myParent;
-        this->depth = depth;
+        this->semanticValue = new char[10];
+        strcpy(this->semanticValue, "\0");
     }
 };
+
+std::vector<Token*> tokenScanner(char* filename);
+
+TreeNode* recursiveParse(Symbol crtSymbol, std::vector<Token*> tokenVec, TreeNode* parentNode);
+
+void showTree(TreeNode* crtNode, int depth);
 
 #endif //PROJECT3_PARSE_H

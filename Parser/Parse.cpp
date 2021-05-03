@@ -135,16 +135,16 @@ inline Rule* matchRule(Symbol crtSymbol, Token* lookahead){
 //
 // print the information of the current tree node
 //
-void printNode(TreeNode* crtNode){
+void printNode(TreeNode* crtNode, int depth){
     // print indention
-    for (int i=0; i<crtNode->depth; i++){
+    for (int i=0; i<depth; i++){
         printf("    ");
     }
     // print symbol type
-    printf("--[%s]\n", symbolToStr[static_cast<int>(crtNode->mySymbol)]);
+    printf("--[%s]-(%s)\n", symbolToStr[static_cast<int>(crtNode->mySymbol)], crtNode->semanticValue);
 }
 
-Rule* chooseIfRule(std::vector<Token*> tokenVec, TreeNode* crtNode){
+Rule* chooseIfRule(std::vector<Token*> tokenVec){
     int tempIter = iter;
     for (int i=tempIter; i<tokenVec.size(); i++){
         if (tokenVec[i]->type == Symbol::IF){
@@ -161,10 +161,13 @@ Rule* chooseIfRule(std::vector<Token*> tokenVec, TreeNode* crtNode){
 //
 // recursive descent parsing function
 //
-TreeNode* recursiveParse(Symbol crtSymbol, std::vector<Token*> tokenVec, TreeNode* parentNode, int depth){
-    auto* crtNode = new TreeNode(crtSymbol, parentNode, depth);
+TreeNode* recursiveParse(Symbol crtSymbol, std::vector<Token*> tokenVec, TreeNode* parentNode){
+    auto* crtNode = new TreeNode(crtSymbol, parentNode);
     // base case: if the symbol is a terminal, then return
     if (isTerminal(crtSymbol)) {
+        if (crtSymbol != Symbol::nullStr && iter < tokenVec.size()){
+            strcpy(crtNode->semanticValue, tokenVec[iter]->semanticValue);
+        }
         // when current node is a terminal, advance your iterator to the next token
         if (crtSymbol != Symbol::nullStr) iter++;
         return crtNode;
@@ -176,18 +179,14 @@ TreeNode* recursiveParse(Symbol crtSymbol, std::vector<Token*> tokenVec, TreeNod
 
     // find the correct rule to apply
     if (crtSymbol == Symbol::ifStmtsPostfix){
-        appliedRule = chooseIfRule(tokenVec, crtNode);
-    }
-    // TODO: solve precedence and associativity here
-    else if (crtSymbol == Symbol::OpExp && false){
-//        appliedRule = chooseOpExpRule(tokenVec, crtNode);
+        appliedRule = chooseIfRule(tokenVec);
     }
     else{
         for (auto rule : rules){
             if (rule->LHS == crtSymbol) potentialRules.emplace_back(rule);
         }
         if (potentialRules.size() > 1){ // we need to find the correct rule using the table
-            lookahead = tokenVec[iter]; // get the token
+            lookahead = iter < tokenVec.size() ? tokenVec[iter] : new Token(); // get the token
             appliedRule = matchRule(crtSymbol, lookahead);
         } else{
             appliedRule = *potentialRules.begin();
@@ -201,7 +200,8 @@ TreeNode* recursiveParse(Symbol crtSymbol, std::vector<Token*> tokenVec, TreeNod
 
     // iterate the RHS of the rule and build TreeNode recursively
     for (auto symbol : appliedRule->RHS){
-        TreeNode* childNode = recursiveParse(symbol, tokenVec, crtNode, depth+1);
+        TreeNode* childNode = recursiveParse(symbol, tokenVec, crtNode);
+        childNode->myParent = crtNode;
         crtNode->myChildren.emplace_back(childNode);
     }
     return crtNode;
@@ -210,27 +210,7 @@ TreeNode* recursiveParse(Symbol crtSymbol, std::vector<Token*> tokenVec, TreeNod
 //
 // show the whole parse tree
 //
-void showTree(TreeNode* crtNode){
-    printNode(crtNode);
-    for (auto node : crtNode->myChildren) showTree(node);
-}
-
-int main(){
-    makeRules(&rules);
-    makeFirsts(&Firsts, &rules);
-    makeFollows(&Follows, &Firsts, &rules);
-    table = new LL1Table(&Firsts, &Follows, &rules);
-    char filename[30] = "./ScannerOutput.txt";
-    std::vector<Token*> tokenVec = tokenScanner(filename);
-    // TODO: special handler for if
-    // TODO: special handler for OpExp
-    // TODO: special handler for precedence
-    try {
-        TreeNode* root = recursiveParse(Symbol::program, tokenVec, nullptr, 0);
-        showTree(root);
-    } catch (std::exception &e){
-        printf("%s", e.what());
-        printf("Wrong grammar, cannot parse!\n");
-    }
-    return 0;
+void showTree(TreeNode* crtNode, int depth){
+    printNode(crtNode, depth);
+    for (auto node : crtNode->myChildren) showTree(node, depth+1);
 }

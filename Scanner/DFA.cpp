@@ -34,7 +34,6 @@ void expandDFA(DFA_Node* crtNode){
             // if the transition is not via null string
             if (edge->character == -1) continue;
             // if the transition leads to a visited node
-            // TODO: you have to add the edge from current node to the visited node, instead of ignoring it
             // you have to find a way to find the node set from a node, and add the edge from current set to that set of nodes
             if (edge->to->visited){
                 DFA_Edge* dfa_Edge = new DFA_Edge(edge->character, crtNode, edge->to->mySet);
