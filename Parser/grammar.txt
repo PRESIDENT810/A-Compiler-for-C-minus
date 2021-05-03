@@ -25,6 +25,7 @@
 // controlStmt: dowhileStmt SEMI
 // controlStmt: returnStmt SEMI
 // rwStmt: rStmt
+// rwStmt: wStmt
 // assignStmt: ID assignStmtPostfix
 // assignStmtPostfix: LSQUARE exp RSQUARE ASSIGN exp
 // assignStmtPostfix: ASSIGN exp

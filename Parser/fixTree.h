@@ -32,4 +32,22 @@ public:
 
 void removePostfix(TreeNode* crtNode);
 
+bool isOperator(TreeNode* node);
+
+void swapOperator(TreeNode* crtNode);
+
+void concatExp(TreeNode* crtNode);
+
+void fixUnary(TreeNode* crtNode);
+
+inline bool ifHigherPrecedence(TreeNode* node1, TreeNode* node2);
+
+void fixPrecedence(TreeNode* crtNode);
+
+void renameExp(TreeNode* crtNode);
+
+void resetParent(TreeNode* crtNode);
+
+void fixAST(TreeNode* root);
+
 #endif //PROJECT3_FIXTREE_H

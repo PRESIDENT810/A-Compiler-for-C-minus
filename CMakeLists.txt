@@ -12,4 +12,4 @@ add_executable(Project4
         Parser/grammer.h
         Parser/Parse.cpp Parser/Parse.h
         Parser/fixTree.cpp Parser/fixTree.h
-        CodeGen/CogeGen.cpp CodeGen/CogeGen.h)
+        CodeGen/CogeGen.cpp CodeGen/CogeGen.h CodeGen/main.cpp CodeGen/VM.cpp CodeGen/VM.h)
