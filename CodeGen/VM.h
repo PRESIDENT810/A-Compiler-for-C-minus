@@ -1,6 +1,7 @@
 #ifndef PROJECT3_VM_H
 #define PROJECT3_VM_H
 
+#include <string_view>
 #include <unordered_map>
 
 enum class Type{
@@ -11,12 +12,16 @@ enum class Type{
 class Ptr{
 public:
     Type type;
+    explicit Ptr(){
+        this->type = Type::integer;
+    }
     virtual int getAddr() = 0;
 };
 
 class VarPtr: public Ptr{
 public:
     int baseAddr;
+
     explicit VarPtr(int addr){
         this->baseAddr = addr;
         this->type = Type::integer;
@@ -30,6 +35,7 @@ class ArrPtr: public Ptr{
 public:
     int baseAddr;
     int len;
+
     explicit ArrPtr(int addr, int len){
         this->baseAddr = addr;
         this->len = len;
@@ -42,13 +48,21 @@ public:
 
 class VM{
 public:
-    std::unordered_map<char*, Ptr*> memTable;
+    std::unordered_map<std::string_view, Ptr*> memTable;
     int stackTop;
+    int regUsed;
+    int label;
+
     explicit VM();
     Ptr* registerVar(char* varName);
     Ptr* registerArr(char* arrName, int len);
     Ptr* getPtr(char* name);
-    int allocate(int space);
+    int allocMem(int space);
+
+    int allocReg();
+    void freeReg();
+
+    int newLabel();
 };
 
 #endif //PROJECT3_VM_H

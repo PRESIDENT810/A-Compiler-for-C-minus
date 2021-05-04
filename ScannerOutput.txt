@@ -66,13 +66,3 @@ ID
 MINUS
 d
 ID
-/
-DIV_OP
-arr
-ID
-[
-LSQUARE
-4
-INTNUM
-]
-RSQUARE

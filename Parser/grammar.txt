@@ -63,3 +63,60 @@
 // OpExp: SHR_OP realExp OpExp
 // OpExp: ANDAND realExp OpExp
 // OpExp: OROR realExp OpExp
+
+// program: varDecls stmts
+// varDecls: varDecl varDecls
+// varDecls: nullStr
+// varDecl: INT declList SEMI
+// declList: decl COMMA declList
+// declList: decl
+// decl: ID ASSIGN INTNUM
+// decl: ID LSQUARE INTNUM RSQUARE
+// decl: ID
+// codeBlock: stmt
+// codeBlock: LBRACE stmts RBRACE
+// stmts: stmt stmts
+// stmts: stmt
+// stmt: assignStmt SEMI
+// stmt: controlStmt
+// stmt: rwStmt SEMI
+// stmt: SEMI
+// controlStmt: ifStmts
+// controlStmt: whileStmt
+// controlStmt: dowhileStmt SEMI
+// controlStmt: returnStmt SEMI
+// rwStmt: rStmt
+// rwStmt: wStmt
+// assignStmt: ID LSQUARE exp RSQUARE ASSIGN exp
+// assignStmt: ID ASSIGN exp
+// ifStmts: ifStmt
+// ifStmts: ifStmt ELSE codeBlock
+// ifStmt: IF LPAR exp RPAR codeBlock
+// whileStmt: WHILE LPAR exp RPAR codeBlock
+// dowhileStmt: DO codeBlock WHILE LPAR exp RPAR
+// returnStmt: RETURN
+// rStmt: READ LPAR ID RPAR
+// wStmt: WRITE LPAR exp RPAR
+// exp: exp OP exp
+// exp: ID
+// exp: INTNUM
+// exp: ID LSQUARE exp RSQUARE
+// exp: NOT_OP exp
+// exp: MINUS exp
+// exp: LPAR exp RPAR
+// OP: AND_OP
+// OP: OR_OP
+// OP: PLUS
+// OP: MINUS
+// OP: MUL_OP
+// OP: DIV_OP
+// OP: LT
+// OP: GT
+// OP: EQ
+// OP: NOTEQ
+// OP: LTEQ
+// OP: GTEQ
+// OP: SHL_OP
+// OP: SHR_OP
+// OP: ANDAND
+// OP: OROR

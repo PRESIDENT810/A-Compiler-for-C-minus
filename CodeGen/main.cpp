@@ -1,9 +1,11 @@
 #include "CogeGen.h"
+#include "VM.h"
 
 extern std::vector<Rule*> rules;
 extern std::vector<First*> Firsts;
 extern std::vector<Follow*> Follows;
 extern LL1Table* table;
+extern VM* vm;
 
 int main(){
     makeRules(&rules);
@@ -15,7 +17,9 @@ int main(){
     try {
         TreeNode* root = recursiveParse(Symbol::program, tokenVec, nullptr);
         fixAST(root);
-        showTree(root, 0);
+//        showTree(root, 0);
+        vm = new VM();
+        programGen(root);
     } catch (std::exception &e){
         printf("%s", e.what());
         printf("Wrong grammar, cannot parse!\n");

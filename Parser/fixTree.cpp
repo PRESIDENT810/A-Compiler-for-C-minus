@@ -105,7 +105,8 @@ inline bool ifHigherPrecedence(TreeNode* node1, TreeNode* node2){
 
 void fixPrecedence(TreeNode* crtNode){
     for (auto child : crtNode->myChildren) fixPrecedence(child);
-    if (crtNode->mySymbol == Symbol::exp && crtNode->myChildren.size() == 3 && crtNode->myChildren[2]->myChildren.size() == 3){
+    if (crtNode->mySymbol != Symbol::exp) return;
+    if (crtNode->myChildren.size() == 3 && isOperator(crtNode->myChildren[1]) && crtNode->myChildren[2]->myChildren.size() == 3 && isOperator(crtNode->myChildren[2]->myChildren[1])){
         if (ifHigherPrecedence(crtNode->myChildren[1], crtNode->myChildren[2]->myChildren[1])){
             TreeNode* newCrtNode = crtNode->myChildren[2];
             crtNode->myChildren.swap(newCrtNode->myChildren);

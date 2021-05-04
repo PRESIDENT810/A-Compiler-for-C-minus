@@ -41,4 +41,6 @@ void wStmtGen(TreeNode* crtNode);
 
 void expGen(TreeNode* crtNode);
 
+void OpGen(TreeNode* crtNode);
+
 #endif //PROJECT3_COGEGEN_H
