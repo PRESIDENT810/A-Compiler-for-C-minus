@@ -149,13 +149,13 @@ Rule* chooseIfRule(std::vector<Token*> tokenVec){
     for (int i=tempIter; i<tokenVec.size(); i++){
         if (tokenVec[i]->type == Symbol::IF){
             // if find IF first, then use rule: ifStmtsPostfix->nullStr
-            return rules[31];
+            return rules[30];
         } else if (tokenVec[i]->type == Symbol::ELSE){
             // if find ELSE first, then use rule: ifStmtsPostfix->ELSE codeBlock
-            return rules[32];
+            return rules[31];
         }
     }
-    return rules[31];
+    return rules[30];
 }
 
 //

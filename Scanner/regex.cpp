@@ -102,8 +102,8 @@ std::vector<NFA*> allReservedWordGen(){
     vec.emplace_back(reservedGen("while", "WHILE"));
     vec.emplace_back(reservedGen("void", "VOID"));
     vec.emplace_back(reservedGen("int", "INT"));
-    vec.emplace_back(reservedGen("scanf", "SCANF"));
-    vec.emplace_back(reservedGen("printf", "PRINTF"));
+    vec.emplace_back(reservedGen("scanf", "READ"));
+    vec.emplace_back(reservedGen("printf", "WRITE"));
     vec.emplace_back(reservedGen("return", "RETURN"));
     return vec;
 }

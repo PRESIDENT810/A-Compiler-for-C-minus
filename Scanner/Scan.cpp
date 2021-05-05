@@ -1,28 +1,10 @@
-#include "DFA.h"
+#include "Scan.h"
 
 std::vector<DFA_Node*> headNodes;
 std::vector<DFA_Node*> crtNodes;
 
-class inputBuffer{
-public:
-    char buffer[20];
-    int ptr = 0;
-    inputBuffer(){
-        memset(this->buffer, '\0', 20);
-    }
-    void fillBuffer(char c){
-        this->buffer[this->ptr++] = c;
-    }
-    void clearBuffer(){
-        memset(this->buffer, '\0', 20);
-        this->ptr = 0;
-    }
-    void printBuffer(){
-        printf("%s\n", this->buffer);
-    }
-};
-
-inputBuffer* iB = new inputBuffer();
+FILE* fp2;
+inputBuffer* iB;
 
 //
 // this function initialize all DFA graphs and set the pointer to current DFA graph nodes to the starting node
@@ -59,9 +41,10 @@ void prepareDFA(){
 bool findMatch(DFA_Node* dfa_node){
     for (auto nodes : dfa_node->nodes){
         if (nodes->token != nullptr){
-            iB->printBuffer();
+            iB->printBuffer(fp2);
             iB->clearBuffer();
-            printf("%s\n", nodes->token);
+//            printf("%s\n", nodes->token);
+            fprintf(fp2, "%s\n", nodes->token);
             return true;
         }
     }
@@ -86,10 +69,7 @@ inline char readNext(FILE *fp){
 //
 // read this file and output token
 //
-void readFile(const char* filename){
-    FILE *fp = nullptr;
-    fp = fopen(filename, "r");
-
+void readFile(FILE* fp){
     char c = readNext(fp);
     bool* matched = new bool[headNodes.size()];
     int* matchLen = new int[headNodes.size()];
@@ -166,12 +146,4 @@ void test(){
     auto idNFA = intnumGen();
     auto idDFA = conversion(idNFA);
     return;
-}
-
-int main(){
-//    test();
-    prepareDFA();
-    char filename[15] = "./testFile.c";
-    readFile(filename);
-    return 0;
 }

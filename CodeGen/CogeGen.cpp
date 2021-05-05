@@ -34,7 +34,7 @@ void declGen(TreeNode* crtNode){
         Ptr* ptr = vm->registerVar(crtNode->myChildren[0]->semanticValue);
         // assign value to this address
         int value = atoi(crtNode->myChildren[2]->semanticValue);
-        printf("li $v0 %d\n", value);
+        printf("addi $v0 $zero %d\n", value);
         printf("sw $v0 %d($sp)\n", ptr->getAddr());
     } else if (crtNode->myChildren.size() == 4){
         int len = atoi(crtNode->myChildren[2]->semanticValue);
@@ -114,7 +114,7 @@ void assignStmtGen(TreeNode* crtNode){
         printf("add $sp $a0 $zero\n");
         expGen(crtNode->myChildren[5]);
         Ptr* ptr = vm->getPtr(crtNode->myChildren[0]->semanticValue);
-        printf("lw $t3 $%d($sp)\n", ptr->getAddr());
+        printf("lw $t3 %d($sp)\n", ptr->getAddr());
         printf("sub $sp $sp $a0\n");
     }
 }
@@ -149,7 +149,7 @@ void ifStmtsGen(TreeNode* crtNode){
     printf("jal LABEL%d\n", label1);
     printf("LABEL%d\n", label1);
     // IF block
-    codeBlockGen(crtNode->myChildren[4]);
+    codeBlockGen(crtNode->myChildren[0]->myChildren[4]);
     // jal LABEL 3
     // Label 2
     printf("jal LABEL%d\n", label3);
@@ -179,7 +179,7 @@ void ifStmtGen(TreeNode* crtNode){
 void whileStmtGen(TreeNode* crtNode){
     int label1 = vm->newLabel();
     int label2 = vm->newLabel();
-    printf("LABEL%d", label1);
+    printf("LABEL%d\n", label1);
     expGen(crtNode->myChildren[2]);
     printf("jal LABEL%d\n", label2);
     codeBlockGen(crtNode->myChildren[4]);
@@ -211,20 +211,21 @@ void returnStmtGen(TreeNode* crtNode){
 }
 
 //
-// the result of scanf is saved at $t3 by default
+// the result of scanf is saved at $v0 by default
 //
 void rStmtGen(TreeNode* crtNode){
-    printf("jal scanf");
+    printf("jal scanf\n");
     Ptr* ptr = vm->getPtr(crtNode->myChildren[2]->semanticValue);
-    printf("sw $t3 %d($sp)\n", ptr->getAddr());
+    printf("sw $v0 %d($sp)\n", ptr->getAddr());
 }
 
 //
-// the result to be output is saved at $t3 by default
+// the result to be output is saved at a0 by default
 //
 void wStmtGen(TreeNode* crtNode){
     expGen(crtNode->myChildren[2]);
-    printf("jal printf");
+    printf("add $a0 $t3 $zero\n");
+    printf("jal printf\n");
 }
 
 //
@@ -244,7 +245,7 @@ void expGen(TreeNode* crtNode){
         expGen(crtNode->myChildren[2]);
         printf("add $sp $t3 $zero\n");
         Ptr* ptr = vm->getPtr(crtNode->myChildren[0]->semanticValue);
-        printf("lw $t3 $%d($sp)\n", ptr->getAddr());
+        printf("lw $t3 %d($sp)\n", ptr->getAddr());
         printf("sub $sp $sp $t3\n");
     } else if (crtNode->myChildren.size() == 2 && crtNode->myChildren[0]->mySymbol == Symbol::NOT_OP){
         // exp: NOT_OP exp
@@ -261,11 +262,11 @@ void expGen(TreeNode* crtNode){
         // exp: exp OP exp
         expGen(crtNode->myChildren[0]);
         int reg = vm->allocReg();
-        printf("addi $t%d $t3 $zero\n", reg);
+        printf("add $t%d $t3 $zero\n", reg);
         expGen(crtNode->myChildren[2]);
-        printf("addi $t1 $t%d $zero\n", reg);
+        printf("add $t1 $t%d $zero\n", reg);
         vm->freeReg();
-        printf("addi $t2 $t3 $zero\n");
+        printf("add $t2 $t3 $zero\n");
         OpGen(crtNode->myChildren[1]);
     }
 }
@@ -274,20 +275,20 @@ void OpGen(TreeNode* crtNode){
     Symbol op = crtNode->mySymbol;
     switch (op){
         case Symbol::AND_OP:
-            printf("add $t3 $t2 $t1\n");
+            printf("and $t3 $t2 $t1\n");
             break;
         case Symbol::OR_OP:
             printf("or $t3 $t2 $t1\n");
             break;
         case Symbol::PLUS:
-            printf("add $t3 $t2 $t1\n");
+            printf("add $t3 $t1 $t2\n");
             break;
         case Symbol::MINUS:
-            printf("sub $t3 $t2 $t1\n");
+            printf("sub $t3 $t1 $t2\n");
             break;
         case Symbol::MUL_OP:
             printf("mult $t1 $t2\n");
-            printf("mfhi $t3\n");
+            printf("mflo $t3\n");
             break;
         case Symbol::DIV_OP:
             printf("div $t1 $t2\n");
@@ -302,19 +303,19 @@ void OpGen(TreeNode* crtNode){
             printf("bne $t3 $zero 1\n");
             break;
         case Symbol::EQ:
-            printf("beq $1 $2 1\n");
+            printf("beq $t1 $t2 1\n");
             break;
         case Symbol::NOTEQ:
-            printf("bne $1 $2 1\n");
+            printf("bne $t1 $t2 1\n");
             break;
         case Symbol::LTEQ:
             printf("slt $t3 $t2 $t1\n");
-            printf("xori $t3 1\n");
+            printf("xori $t3 $t3 1\n");
             printf("bne $t3 $zero 1\n");
             break;
         case Symbol::GTEQ:
             printf("slt $t3 $t1 $t2\n");
-            printf("xori $t3 1\n");
+            printf("xori $t3 $t3 1\n");
             printf("bne $t3 $zero 1\n");
             break;
         case Symbol::SHL_OP:
@@ -324,10 +325,10 @@ void OpGen(TreeNode* crtNode){
             printf("srlv $t3 $t1 $t2\n");
             break;
         case Symbol::ANDAND:
-            printf("add $t3 $t2 $t1\n");
+            printf("and $t3 $t1 $t2\n");
             break;
         case Symbol::OROR:
-            printf("or $t3 $t2 $t1\n");
+            printf("or $t3 $t1 $t2\n");
             break;
         default:
             printf("Unknown operator\n");

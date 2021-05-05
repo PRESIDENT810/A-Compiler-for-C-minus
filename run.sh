@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
-rm ./ScannerOutput.txt
+rm ./mips.s
 
-clang++ ./Scanner/Scan.cpp ./Scanner/regex.cpp ./Scanner/NFA.cpp ./Scanner/DFA.cpp -std=c++17 -o ./Scanner/Scanner
-./Scanner/Scanner >> ./ScannerOutput.txt
+clang++ Scanner/Scan.cpp Scanner/DFA.cpp Scanner/NFA.cpp Scanner/regex.cpp Parser/grammer.cpp Parser/Parse.cpp Parser/fixTree.cpp CodeGen/CogeGen.cpp CodeGen/VM.cpp main.cpp -std=c++17
+./a.out >> ./mips.s
 
-#g++ ./Parser/grammer.cpp ./Parser/Parse.cpp -std=c++17 -o ./Parser/Parser
-#./Parser/Parser
+python3 ./Simulator/simulator.py

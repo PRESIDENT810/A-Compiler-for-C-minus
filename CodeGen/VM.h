@@ -4,11 +4,17 @@
 #include <string_view>
 #include <unordered_map>
 
+//
+// identifier for type of variables
+//
 enum class Type{
     integer = 0,
     array = 1
 };
 
+//
+// pointer in VM
+//
 class Ptr{
 public:
     Type type;
@@ -18,6 +24,9 @@ public:
     virtual int getAddr() = 0;
 };
 
+//
+// pointer of variables in VM
+//
 class VarPtr: public Ptr{
 public:
     int baseAddr;
@@ -31,6 +40,9 @@ public:
     }
 };
 
+//
+// pointer of arrays in VM
+//
 class ArrPtr: public Ptr{
 public:
     int baseAddr;
@@ -46,6 +58,9 @@ public:
     }
 };
 
+//
+// virtual machine
+//
 class VM{
 public:
     std::unordered_map<std::string_view, Ptr*> memTable;

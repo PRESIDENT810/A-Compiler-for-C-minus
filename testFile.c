@@ -1,6 +1,8 @@
-int a, b, c;
-int d = 4;
-a = 1;
-b = 2;
-c = 3;
-a = -b+c*d-d
+int intaa=5, bb=2;
+while (intaa >= 0){
+    intaa = intaa - bb;
+    printf(intaa);
+    intaa = intaa - 1;
+    printf(bb);
+}
+return;
